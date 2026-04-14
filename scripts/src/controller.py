@@ -61,8 +61,10 @@ class Controller:
                 if self.ser.in_waiting:
                     buf = buf + self.ser.readall()
                     cmd, buf = Controller._parse(buf)
-                    cmd, self.state = cmd_parser( self.state, cmd )
-                    if cmd: self.queue.put( cmd )
+                    while cmd:
+                        res, self.state = cmd_parser( self.state, cmd )
+                        if res: self.queue.put( res )
+                        cmd, buf = Controller._parse(buf)
                 time.sleep( 0.005 )
     def _write_task( self ):
         if isinstance( self.ser, serial.Serial ):
