@@ -1,11 +1,12 @@
 use std::thread;
-use std::time::Duration;
+//use std::time::Duration;
 use std::sync::mpsc::{self,Sender,Receiver};
+use std::io;
 
 use crate::controller::Controller;
 use crate::commands::Cmd;
 
-pub fn thread_send( controller : &Controller ) -> (thread::JoinHandle<()>, Sender<Cmd>) {
+pub fn thread_send( controller : &Controller ) -> (thread::JoinHandle<io::Result<()>>, Sender<Cmd>) {
 
     let mut port = controller.port.try_clone()
         .expect("fail to clone port");
@@ -15,7 +16,7 @@ pub fn thread_send( controller : &Controller ) -> (thread::JoinHandle<()>, Sende
     let handler = thread::spawn( move || {
         loop {
             if let Ok(cmd) = rx.try_recv() {
-                Controller::send(&mut port, cmd);
+                Controller::send(&mut port, cmd)?;
             }
 
             if let Ok(f) = flag.try_read() {
@@ -23,8 +24,8 @@ pub fn thread_send( controller : &Controller ) -> (thread::JoinHandle<()>, Sende
             }
             //thread::sleep(Duration::from_millis(10));
         }
-        thread::sleep(Duration::from_millis(10));
-        Controller::send(&mut port, Cmd::Stop);
+        Controller::send(&mut port, Cmd::Stop)?;
+        Ok(())
     });
     ( handler, tx )
 }

@@ -1,4 +1,4 @@
-#[derive(Debug)]
+#[derive(Debug,Copy,Clone)]
 pub enum Dir { CW, CCW }
 
 #[derive(Debug)]
@@ -16,6 +16,15 @@ pub enum Cmd {
     Move(Dir), Units(Unit), Mode(Mode), Speed(Speed),
     SetSpeed(f32), SetZero,
     Stop
+}
+
+impl Dir {
+    pub fn neg( self : &Self ) -> Self {
+        match self {
+            Dir::CW => Dir::CCW,
+            Dir::CCW => Dir::CW
+        }
+    }
 }
 
 impl Cmd {
