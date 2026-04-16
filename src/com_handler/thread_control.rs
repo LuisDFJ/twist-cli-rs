@@ -7,21 +7,24 @@ use std::io;
 use crate::controller::Controller;
 use crate::data::Data;
 use crate::commands::Cmd;
-use crate::experiment::Experiment;
+use crate::experiment::{Experiment,ExperimentParams};
 
 pub fn thread_control( controller : &Controller, tx : Sender<Cmd>, rx : Receiver<Data> ) -> thread::JoinHandle<()> {
     let flag = controller.flag.clone();
     let break_flag = controller.break_flag.clone();
-    let params = controller.params;
+    let params = controller.params.clone();
     let handler = thread::spawn( move || {
-        let mut experiment = Experiment::new(params);
-        control_loop(&mut experiment, tx, rx, flag, break_flag)
+        control_loop(params, tx, rx, flag, break_flag.clone())
             .unwrap_or_else(|e| println!("control loop error: {e}"));
+        if let Ok(mut f) = break_flag.write() {
+            *f = true;
+        }
     });
     handler
 }
 
-fn control_loop( experiment : &mut Experiment, tx : Sender<Cmd>, rx : Receiver<Data>, flag : Arc<RwLock<bool>>, break_flag : Arc<RwLock<bool>> ) -> io::Result<()> {
+fn control_loop( params : ExperimentParams, tx : Sender<Cmd>, rx : Receiver<Data>, flag : Arc<RwLock<bool>>, break_flag : Arc<RwLock<bool>> ) -> io::Result<()> {
+    let mut experiment = Experiment::new(params)?;
     experiment.config(&tx)?;
     loop {
         if experiment.pool(&tx, &rx)? {

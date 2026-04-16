@@ -13,8 +13,8 @@ use crate::serial_parser::SerialParser;
 
 fn main() -> io::Result<()> {
     let parser = SerialParser::new("\r\n", "DEG", "ncm");
-    let params = ExperimentParams::new(1.0, Dir::CW, 2, 10.0);
+    let params = ExperimentParams::new( "P02", 1.0, Dir::CW, 2, 10.0);
     let controller = Controller::new("/home/luisdfj/ttyUSB1", 115200, parser, params)?;
-    controller.run();
+    controller.run()?;
     Ok(())
 }

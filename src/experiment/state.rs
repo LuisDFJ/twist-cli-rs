@@ -32,7 +32,7 @@ impl State {
     }
     fn step_backward( experiment : &mut Experiment, x : f32, y : f32 ) -> Vec<Control> {
         let mut c = vec![];
-        if x.abs() > 0.0 && y * x.signum() < 0.0 {
+        if x.abs() > 0.0 && (y*x).signum() < 0.0 {
             experiment.ncycles += 1;
             c.push( Control::Command(Cmd::Stop) );
             c.push( Control::Halt(1000) );

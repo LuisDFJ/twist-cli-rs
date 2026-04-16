@@ -1,5 +1,5 @@
 use std::thread;
-//use std::time::Duration;
+use std::time::Duration;
 use std::sync::mpsc::{self,Sender,Receiver};
 use std::io;
 
@@ -22,7 +22,7 @@ pub fn thread_send( controller : &Controller ) -> (thread::JoinHandle<io::Result
             if let Ok(f) = flag.try_read() {
                 if !(*f) { break }
             }
-            //thread::sleep(Duration::from_millis(10));
+            thread::sleep(Duration::from_millis(1));
         }
         Controller::send(&mut port, Cmd::Stop)?;
         Ok(())

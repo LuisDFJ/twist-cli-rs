@@ -9,6 +9,10 @@ pub enum Data {
     Unknown(String)
 }
 
+fn get_as_string( buffer : &[u8] ) -> Option<String> {
+    String::from_utf8(buffer.to_vec()).ok()
+}
+
 impl Data {
     pub fn parse_buffer( parser : &SerialParser, buffer : &mut Vec<u8> ) -> Option<Data> {
         if let Some( (a,b,i) ) = parser.read_xy_valid(buffer) {
@@ -17,8 +21,9 @@ impl Data {
             res
         } else {
             let i = parser.drain_size_corrupt(buffer)?;
+            let res = get_as_string(&buffer[..i]);
             buffer.drain(..i);
-            None
+            Some(Data::Unknown(res?))
         }
     }
 }

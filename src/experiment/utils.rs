@@ -5,7 +5,7 @@ use std::io::{self,Error,ErrorKind};
 
 use crate::commands::{Cmd,Mode,Speed,Unit};
 use crate::data::Data;
-use super::{Experiment,Control,State};
+use super::{Experiment,Control,State,XY};
 
 impl Experiment {
     pub fn config( self : &mut Self, tx : &Sender<Cmd> ) -> io::Result<()> {
@@ -22,8 +22,15 @@ impl Experiment {
         tx.send_cmd(Cmd::GetTorquePosition)?;
         loop {
             if let Ok(d) = rx.try_recv() {
-                self.data.push(d);
-                println!("From Control: {:?}", self.data.last());
+                match d {
+                    Data::XYU(x,y,xu,yu) => {
+                        self.data.push( XY{x,y} );
+                        self.units.x.get_or_insert(xu);
+                        self.units.y.get_or_insert(yu);
+                    },
+                    Data::Unknown(s) => println!("Unknown pattern: {}", s),
+                    _ => {},
+                }
             } else {
                 break;
             }
@@ -41,9 +48,7 @@ impl Experiment {
     }
     fn control( self : &mut Self ) -> Option<Vec<Control>> {
         let d = self.data.last()?;
-        if let Data::XYU(x, y,_,_) = d {
-            Some( State::step(self, *x, *y) )
-        } else { None }
+        Some(State::step(self, d.x, d.y))
     }
 }
 
