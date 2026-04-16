@@ -34,12 +34,11 @@ fn parse_entries<'a>( a : &'a[u8], b : &'a[u8] ) -> Option<Data> {
     let sa : Vec<&str> = sa.split_whitespace().collect();
     let sb : Vec<&str> = sb.split_whitespace().collect();
     if sa.len() == 2 && sb.len() == 2 {
-        let x : f32 = sa[0].parse().ok()?;
-        let y : f32 = sb[0].parse().ok()?;
-        return Some( Data::XYU(
-            x, y,
-            sa[1].to_string(), sb[1].to_string()
-        ) )
+        let y  = sa[0].parse().ok()?;
+        let yu = sa[1].to_string();
+        let x  = sb[0].parse().ok()?;
+        let xu = sb[1].to_string();
+        return Some( Data::XYU( x, y, xu, yu ) )
     }
     None
 }

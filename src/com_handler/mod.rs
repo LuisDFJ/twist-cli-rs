@@ -2,10 +2,12 @@ pub mod thread_control;
 pub mod thread_send;
 pub mod thread_listen;
 
+use std::sync::mpsc::Receiver;
 use std::thread;
 use std::io;
 
 use crate::controller::Controller;
+use crate::view::ViewCmd;
 use self::thread_send::thread_send;
 use self::thread_listen::thread_listen;
 use self::thread_control::thread_control;
@@ -15,6 +17,7 @@ pub struct ComHandler<'a> {
     t_listen : Option< thread::JoinHandle<io::Result<()>> >,
     t_send   : Option< thread::JoinHandle<io::Result<()>> >,
     t_control: Option< thread::JoinHandle<()> >,
+    pub view_rx  : Receiver< ViewCmd >,
 }
 
 impl <'a> ComHandler<'a> {
@@ -22,12 +25,13 @@ impl <'a> ComHandler<'a> {
         controller.set_flag(true)?;
         let (t_listen, rx) = thread_listen(controller);
         let (t_send, tx) = thread_send(controller);
-        let t_control = thread_control(controller, tx, rx);
+        let (t_control, rx) = thread_control(controller, tx, rx);
         Ok( ComHandler{
             controller,
             t_listen: Some( t_listen ),
             t_send: Some( t_send ),
-            t_control: Some( t_control )
+            t_control: Some( t_control ),
+            view_rx: rx
         } )
     }
 }

@@ -21,19 +21,21 @@ pub struct ExperimentParams {
 
 impl ExperimentParams {
     pub fn new( name : &str, speed : f32, direction : Dir, cycles : u8, limit : f32 ) -> Self {
-        let speed = speed.max(0.5).min(5.0);
+        let speed = speed.max(0.2).min(5.0);
         ExperimentParams { speed, direction, cycles, limit, name : name.to_string() }
     }
 }
 
-struct XY { x : f32, y : f32 }
-struct UN { x : Option<String>, y : Option<String> }
+#[derive(Debug,Clone, Copy)]
+pub struct XY { pub x : f32, pub y : f32 }
+#[derive(Debug,Clone)]
+pub struct UN { pub x : Option<String>, pub y : Option<String> }
 
 pub struct Experiment {
     name : String,
     file : BufWriter<fs::File>,
-    data : Vec<XY>,
-    units : UN,
+    pub data : Vec<XY>,
+    pub units : UN,
     speed : f32,
     direction : Dir,
     cycles : u8,

@@ -21,6 +21,7 @@ class State:
         self.prg_speed = 'S'
         self.direction = 'CW'
         self.units = "DEG"
+        self.tunits = "Ncm" # "lbin"
         self.mode = "M"
         self.cycles = 0
         self.cycles_count = 0
@@ -86,10 +87,10 @@ class State:
     @endline_bytes
     def travel_force_read(self) -> bytes:
         return "{:.2f} {}\r\n {:.2f} {}".format(
+            self.y,
+            self.tunits,
             self.x if self.units == "DEG" else self.x / 360.0,
             self.units,
-            self.y,
-            "ncm"
         ).encode()
     @endline_bytes
     def travel_read(self) -> bytes:

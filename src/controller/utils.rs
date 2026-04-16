@@ -41,11 +41,11 @@ impl Controller {
         if let Ok(t) = port.read(&mut buf) {
             buffer.append(&mut buf[..t].to_vec());
         }
-        if let Ok(s) = String::from_utf8(buffer.clone()){
-            if s.len() > 0 {
-                println!("{s}");
-            }
-        }
+        //if let Ok(s) = String::from_utf8(buffer.clone()){
+            //if s.len() > 0 {
+                //println!("{s}");
+            //}
+        //}
         Data::parse_buffer(parser, buffer)
     }
 }

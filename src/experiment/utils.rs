@@ -9,17 +9,17 @@ use super::{Experiment,Control,State,XY};
 
 impl Experiment {
     pub fn config( self : &mut Self, tx : &Sender<Cmd> ) -> io::Result<()> {
-        tx.send_cmd(Cmd::Mode(Mode::Manual))?;
-        tx.send_cmd(Cmd::Units(Unit::Deg))?;
-        tx.send_cmd(Cmd::Speed(Speed::Prog))?;
-        tx.send_cmd(Cmd::SetSpeed(self.speed))?;
-        tx.send_cmd(Cmd::SetZero)?;
-        tx.send_cmd(Cmd::Move(self.direction))?;
+        tx.send_cmd(Cmd::Mode(Mode::Manual), Some(100))?;
+        tx.send_cmd(Cmd::Units(Unit::Deg), Some(100))?;
+        tx.send_cmd(Cmd::Speed(Speed::Prog), Some(100))?;
+        tx.send_cmd(Cmd::SetSpeed(self.speed), Some(100))?;
+        tx.send_cmd(Cmd::SetZero, Some(100))?;
+        tx.send_cmd(Cmd::Move(self.direction), Some(100))?;
         self.state = State::Forward;
         Ok(())
     }
     pub fn pool( self : &mut Self, tx : &Sender<Cmd>, rx : &Receiver<Data> ) -> io::Result<bool> {
-        tx.send_cmd(Cmd::GetTorquePosition)?;
+        tx.send_cmd(Cmd::GetTorquePosition, None)?;
         loop {
             if let Ok(d) = rx.try_recv() {
                 match d {
@@ -38,7 +38,7 @@ impl Experiment {
         if let Some(control_vec) = self.control() {
             for control_cmd in control_vec {
                 match control_cmd {
-                    Control::Command(cmd) => tx.send_cmd(cmd)?,
+                    Control::Command(cmd) => tx.send_cmd(cmd, Some(100))?,
                     Control::Halt(time) => thread::sleep(Duration::from_millis(time as u64)),
                     Control::Break => return Ok(true),
                 }
@@ -52,14 +52,12 @@ impl Experiment {
     }
 }
 
-trait CmdSender {
-    fn send_cmd( self : &Self, cmd : Cmd ) -> io::Result<()>;
-}
-
-impl CmdSender for Sender<Cmd> {
-    fn send_cmd( self : &Self, cmd : Cmd ) -> io::Result<()> {
+use crate::cmd_sender::CmdSender;
+impl CmdSender<Cmd> for Sender<Cmd> {
+    fn send_cmd( self : &Self, cmd : Cmd, millis : Option<u64> ) -> io::Result<()> {
         self.send(cmd)
             .map_err(|_| Error::new(ErrorKind::Other, "fail to send command"))?;
+        thread::sleep(Duration::from_millis(millis.unwrap_or_default()));
         Ok(())
     }
 }
