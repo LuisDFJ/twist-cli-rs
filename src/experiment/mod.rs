@@ -13,16 +13,18 @@ pub enum Control {
 #[derive(Debug, Clone)]
 pub struct ExperimentParams {
     name : String,
-    speed : f32,
-    direction : Dir,
+    pub dir  : PathBuf,
+    pub speed : f32,
+    pub direction : Dir,
     cycles : u8,
-    limit : f32,
+    pub limit : f32,
 }
 
 impl ExperimentParams {
     pub fn new( name : &str, speed : f32, direction : Dir, cycles : u8, limit : f32 ) -> Self {
         let speed = speed.max(0.2).min(5.0);
-        ExperimentParams { speed, direction, cycles, limit, name : name.to_string() }
+        let dir   = Path::new("./results/").join(name);
+        ExperimentParams { speed, direction, cycles, limit, name : name.to_string(), dir }
     }
 }
 
@@ -34,7 +36,7 @@ pub struct UN { pub x : Option<String>, pub y : Option<String> }
 pub struct Experiment {
     name : String,
     file : BufWriter<fs::File>,
-    pub data : Vec<XY>,
+    pub data  : Vec<XY>,
     pub units : UN,
     speed : f32,
     direction : Dir,
@@ -47,7 +49,7 @@ pub struct Experiment {
 impl Experiment {
     pub fn new( params : ExperimentParams ) -> io::Result<Self> {
         Ok( Experiment {
-            file : create_results_file(&params.name)?,
+            file : create_results_file(&params.dir)?,
             name : params.name,
             speed: params.speed,
             direction: params.direction,
@@ -62,14 +64,13 @@ impl Experiment {
 }
 
 use std::fs;
-use std::path::Path;
+use std::path::{Path,PathBuf};
 use std::io::{self,Error,ErrorKind,BufWriter,Write};
-fn create_results_file( dir : &str ) -> io::Result<BufWriter<fs::File>> {
-    let base_dir = Path::new("./results/").join(dir);
+fn create_results_file( base_dir : &PathBuf ) -> io::Result<BufWriter<fs::File>> {
     if let Ok(_) = fs::create_dir_all(base_dir.clone()) {
         let f = fs::File::create_new(base_dir.join("res.csv"))
             .map_err( |_| Error::new(ErrorKind::Other, "fail to create new file") )?;
-        Ok(BufWriter::new(f))
+        Ok( BufWriter::new(f) )
     } else {
         Err( Error::new(ErrorKind::Other, "fail to create dir") )
     }

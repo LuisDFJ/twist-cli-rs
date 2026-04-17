@@ -2,6 +2,7 @@ pub mod render;
 pub mod utils;
 
 use crate::experiment::{XY,UN};
+use crate::commands::Dir;
 
 pub enum ViewCmd {
     Entry(XY),
@@ -16,11 +17,15 @@ pub struct Graph {
 }
 
 impl Graph {
-    pub fn new() -> Self {
+    pub fn new( limit : f64, direction : Dir ) -> Self {
+        let x_limits = match direction {
+            Dir::CW => (0.0, limit),
+            Dir::CCW => (-limit, 0.0),
+        };
         Graph {
-            data: vec![],
+            data: vec![(0.0,0.0)],
             units: UN { x: None, y: None },
-            x_limits: (0.0,1.0),
+            x_limits,
             y_limits: (0.0,1.0)
         }
     }
