@@ -33,16 +33,16 @@ class State:
         self.e = 0.0
     def step(self, t : float) -> None:
         if self.run:
-            sign = -1 if self.direction == 'CW' else 1
+            sign = -1 if self.direction == 'CCW' else 1
             dx = sign * self.get_speed() * t
-            dy = math.sqrt(abs(self.x)) * dx
+            dy = 10 * math.exp(-0.05 * abs(self.x)) * dx
             de = dx * ( self.y + dy )
             if de > 0:
                 self.e += de
                 self.x += dx
                 self.y += dy
             else:
-                a = 0.1
+                a = 0.2
                 self.e += de + a*dx*dy
                 self.x += dx
                 self.y += (1+a)*dy

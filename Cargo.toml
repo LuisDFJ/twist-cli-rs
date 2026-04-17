@@ -5,5 +5,7 @@ edition = "2024"
 
 [dependencies]
 crossterm = "0.29.0"
+image = "0.25"
+nokhwa = { version = "0.10", features = ["input-native"] }
 ratatui = "0.30.0"
 serialport = "4.9.0"
